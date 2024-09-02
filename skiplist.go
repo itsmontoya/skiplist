@@ -42,7 +42,7 @@ func (s *Skiplist[K, V]) Get(key K) (value V, err error) {
 
 func (s *Skiplist[K, V]) getMatch(seekIndex int, key K) (value V, err error) {
 	var match bool
-	if value, match = s.floor.getMatch(seekIndex, key); !match {
+	if value, match = s.floor.GetMatch(seekIndex, key); !match {
 		err = ErrNotFound
 		return
 	}
@@ -52,7 +52,7 @@ func (s *Skiplist[K, V]) getMatch(seekIndex int, key K) (value V, err error) {
 
 func (s *Skiplist[K, V]) getSeekIndex(key K) (seekIndex int) {
 	for _, l := range s.levels {
-		seekIndex = l.getIndex(seekIndex, key)
+		seekIndex = l.GetSeekIndex(seekIndex, key)
 	}
 
 	return

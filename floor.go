@@ -21,7 +21,7 @@ type floor[K Key[any], V any] struct {
 	*mappedslice.Slice[Entry[K, V]]
 }
 
-func (f *floor[K, V]) getMatch(seekIndex int, key K) (value V, ok bool) {
+func (f *floor[K, V]) GetMatch(seekIndex int, key K) (value V, ok bool) {
 	cur := f.Cursor()
 	defer cur.Close()
 
