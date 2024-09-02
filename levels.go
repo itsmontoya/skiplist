@@ -1,4 +1,4 @@
-package bssl
+package skiplist
 
 import (
 	"io/fs"
@@ -9,7 +9,7 @@ import (
 	"strings"
 )
 
-func openLevels[K Key[any]](fullPath string) (out []*level[K], err error) {
+func openLevels[K Key](fullPath string) (out []*level[K], err error) {
 	if err = walkLevels(fullPath, func(filepath string, parsed int) (err error) {
 		var l *level[K]
 		if l, err = newLevel[K](filepath, parsed); err != nil {

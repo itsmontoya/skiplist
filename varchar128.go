@@ -1,6 +1,8 @@
-package bssl
+package skiplist
 
 import "slices"
+
+var _ Key = Varchar128{}
 
 func MakeVarchar128(str string) (out Varchar128) {
 	copy(out[:], str)
@@ -13,6 +15,7 @@ func (v Varchar128) String() string {
 	return toString(v[:])
 }
 
-func (v Varchar128) Compare(in Varchar128) (result int) {
-	return slices.Compare(v[:], in[:])
+func (v Varchar128) Compare(in any) (result int) {
+	b := in.(Varchar128)
+	return slices.Compare(v[:], b[:])
 }

@@ -1,15 +1,13 @@
-package bssl
+package skiplist
 
 import (
 	"path"
-
-	"github.com/itsmontoya/mappedslice"
 )
 
-func newFloor[K Key[any], V any](fullPath string) (out *floor[K, V], err error) {
+func newFloor[K Key, V any](fullPath string) (out *floor[K, V], err error) {
 	var f floor[K, V]
 	filepath := path.Join(fullPath, "floor.bat")
-	if f.Slice, err = mappedslice.New[Entry[K, V]](filepath, 32); err != nil {
+	if f.layer, err = newLayer[K, V](filepath); err != nil {
 		return
 	}
 
@@ -17,8 +15,8 @@ func newFloor[K Key[any], V any](fullPath string) (out *floor[K, V], err error) 
 	return
 }
 
-type floor[K Key[any], V any] struct {
-	*mappedslice.Slice[Entry[K, V]]
+type floor[K Key, V any] struct {
+	*layer[K, V]
 }
 
 func (f *floor[K, V]) GetMatch(seekIndex int, key K) (value V, ok bool) {

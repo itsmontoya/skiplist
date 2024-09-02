@@ -1,5 +1,5 @@
-package bssl
+package skiplist
 
-type Key[K any] interface {
-	Compare(K) int
+type Key interface {
+	Compare(any) int
 }

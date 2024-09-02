@@ -1,4 +1,4 @@
-package bssl
+package skiplist
 
 func findEnd(bs []byte) (i int) {
 	var b byte
