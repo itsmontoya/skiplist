@@ -1,0 +1,77 @@
+package skiplist
+
+import (
+	"fmt"
+	"testing"
+)
+
+func TestSkiplist_Insert(t *testing.T) {
+
+	type testcase struct {
+		name string
+		es   []Entry[Varchar16, int]
+	}
+
+	testcases := []testcase{
+		// Do it
+		{
+			name: "basic",
+			es: []Entry[Varchar16, int]{
+				{
+					Key:   MakeVarchar16("0001"),
+					Value: 1,
+				},
+				{
+					Key:   MakeVarchar16("0002"),
+					Value: 2,
+				},
+				{
+					Key:   MakeVarchar16("0003"),
+					Value: 3,
+				},
+				{
+					Key:   MakeVarchar16("0004"),
+					Value: 4,
+				},
+				{
+					Key:   MakeVarchar16("0005"),
+					Value: 5,
+				},
+				{
+					Key:   MakeVarchar16("0006"),
+					Value: 6,
+				},
+				{
+					Key:   MakeVarchar16("0007"),
+					Value: 7,
+				},
+				{
+					Key:   MakeVarchar16("0008"),
+					Value: 8,
+				},
+			},
+		},
+	}
+
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			//defer os.RemoveAll(path.Join("testing", tc.name))
+			sl, err := New[Varchar16, int](tc.name, "testing")
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			sl.incrementEvery = 2
+			for _, e := range tc.es {
+				if err := sl.Insert(e.Key, e.Value); err != nil {
+					t.Fatal(err)
+				}
+			}
+
+			val, _ := sl.Get(MakeVarchar16("0008"))
+			sl.printTree()
+
+			fmt.Println("YES", val)
+		})
+	}
+}
