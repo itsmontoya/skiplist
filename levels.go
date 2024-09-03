@@ -9,7 +9,7 @@ import (
 	"strings"
 )
 
-func openLevels[K Key](fullPath string) (out []*level[K], err error) {
+func openLevels[K Key](fullPath string) (out levels[K], err error) {
 	if err = walkLevels(fullPath, func(filepath string, parsed int) (err error) {
 		var l *level[K]
 		if l, err = newLevel[K](filepath, parsed); err != nil {
@@ -60,4 +60,24 @@ func walkLevels(fullPath string, fn func(filepath string, parsed int) error) (er
 	}
 
 	return
+}
+
+type levels[K Key] []*level[K]
+
+func (ls levels[K]) printLayers() {
+	ls.reverseIterate(func(_ int, l *level[K]) bool {
+		l.printLayer()
+		return false
+	})
+}
+
+func (ls levels[K]) reverseIterate(fn func(i int, l *level[K]) (end bool)) (ended bool) {
+	for i := len(ls) - 1; i > -1; i-- {
+		l := ls[i]
+		if ended = fn(i, l); ended {
+			return
+		}
+	}
+
+	return false
 }
