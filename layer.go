@@ -78,7 +78,7 @@ func (l *layer[K, V]) printLayer() {
 			fmt.Print(", ")
 		}
 
-		fmt.Printf("(<%v>/<%v>)", e.Key, e.Value)
+		fmt.Printf("%v:%v", e.Key, e.Value)
 		i++
 		return false
 	})
