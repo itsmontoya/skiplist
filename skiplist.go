@@ -44,7 +44,7 @@ func (s *Skiplist[K, V]) Get(key K) (value V, err error) {
 	return s.getMatch(seekIndex, key)
 }
 
-func (s *Skiplist[K, V]) Insert(key K, val V) (err error) {
+func (s *Skiplist[K, V]) Set(key K, val V) (err error) {
 	e := makeEntry(key, val)
 	seekIndex := s.getSeekIndex(key)
 	index, match := s.floor.getIndex(seekIndex, key)

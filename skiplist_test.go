@@ -63,7 +63,7 @@ func TestSkiplist_Insert(t *testing.T) {
 
 			sl.incrementEvery = 2
 			for _, e := range tc.es {
-				if err := sl.Insert(e.Key, e.Value); err != nil {
+				if err := sl.Set(e.Key, e.Value); err != nil {
 					t.Fatal(err)
 				}
 			}
