@@ -26,7 +26,7 @@ func (f *floor[K, V]) GetMatch(seekIndex int, key K) (value V, ok bool) {
 	var e Entry[K, V]
 	e, ok = cur.Seek(seekIndex)
 	for ok {
-		switch key.Compare(e.Key) {
+		switch e.Key.Compare(key) {
 		case -1:
 			e, ok = cur.Next()
 		case 1:

@@ -29,7 +29,7 @@ func (l *level[K]) GetSeekIndex(seekIndex int, key K) (index int) {
 
 	e, ok := cur.Seek(seekIndex)
 	for ok {
-		switch key.Compare(e.Key) {
+		switch e.Key.Compare(key) {
 		case -1:
 			index = e.Value
 			e, ok = cur.Next()
