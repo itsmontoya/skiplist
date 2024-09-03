@@ -45,11 +45,26 @@ func (s *Skiplist[K, V]) Get(key K) (value V, err error) {
 }
 
 func (s *Skiplist[K, V]) Set(key K, val V) (err error) {
+	return s.set(key, val, true)
+}
+
+func (s *Skiplist[K, V]) SetNX(key K, val V) (err error) {
+	return s.set(key, val, false)
+}
+
+func (s *Skiplist[K, V]) set(key K, val V, allowUpdate bool) (err error) {
 	e := makeEntry(key, val)
 	seekIndex := s.getSeekIndex(key)
 	index, match := s.floor.getIndex(seekIndex, key)
-	if match {
+	switch {
+	case !match:
+		// No match, continue on
+	case allowUpdate:
+		// Match and allow update, set value at index
 		return s.floor.Set(index, e)
+	default:
+		// Match and update not allowed, return
+		return
 	}
 
 	if err = s.floor.InsertAt(index, e); err != nil {
