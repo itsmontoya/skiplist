@@ -2,7 +2,6 @@ package skiplist
 
 import (
 	"errors"
-	"fmt"
 	"os"
 	"path"
 )
@@ -33,7 +32,7 @@ func New[K Key, V any](name, dir string) (out *Skiplist[K, V], err error) {
 
 type Skiplist[K Key, V any] struct {
 	// Levels, starting at the top level
-	levels []*level[K]
+	levels levels[K]
 	floor  *floor[K, V]
 
 	incrementEvery int
@@ -61,8 +60,10 @@ func (s *Skiplist[K, V]) Insert(key K, val V) (err error) {
 		return
 	}
 
-	lastIndex := index
+	return s.insertReferences(key, index)
+}
 
+func (s *Skiplist[K, V]) insertReferences(key K, lastIndex int) (err error) {
 	var nextLevel int
 	for {
 		var l *level[K]
@@ -70,7 +71,7 @@ func (s *Skiplist[K, V]) Insert(key K, val V) (err error) {
 			return
 		}
 
-		if lastIndex, err = l.Insert(lastIndex, makeEntry(key, lastIndex)); err != nil {
+		if lastIndex, err = l.Insert(0, makeEntry(key, lastIndex)); err != nil {
 			return
 		}
 
@@ -106,26 +107,15 @@ func (s *Skiplist[K, V]) getMatch(seekIndex int, key K) (value V, err error) {
 }
 
 func (s *Skiplist[K, V]) getSeekIndex(key K) (seekIndex int) {
-	for _, l := range s.levels {
+	s.levels.reverseIterate(func(i int, l *level[K]) (end bool) {
 		seekIndex = l.GetSeekIndex(seekIndex, key)
-	}
+		return false
+	})
 
 	return
 }
 
 func (s *Skiplist[K, V]) printTree() {
-	var (
-		i int
-		l *level[K]
-	)
-	for i := len(s.levels) - 1; i > -1; i-- {
-		l = s.levels[i]
-		l.printLayer()
-	}
-
-	if i > 0 {
-		fmt.Print("\n")
-	}
-
+	s.levels.printLayers()
 	s.floor.printLayer()
 }
