@@ -68,10 +68,12 @@ func TestSkiplist_Insert(t *testing.T) {
 				}
 			}
 
-			val, _ := sl.Get(MakeVarchar16("0008"))
 			sl.printTree()
 
-			fmt.Println("YES", val)
+			val, _ := sl.Get(MakeVarchar16("0008"))
+			fmt.Println("0008", val)
+			val, err = sl.Get(MakeVarchar16("0007"))
+			fmt.Println("0007", val, err)
 		})
 	}
 }
