@@ -40,8 +40,8 @@ type Skiplist[K Key, V any] struct {
 }
 
 func (s *Skiplist[K, V]) Get(key K) (value V, err error) {
-	seekIndex := s.getSeekIndex(key)
-	return s.getMatch(seekIndex, key)
+	seekIndexes := s.getSeekIndexes(&key)
+	return s.getMatch(seekIndexes.Last(), &key)
 }
 
 func (s *Skiplist[K, V]) Set(key K, val V) (err error) {
@@ -67,8 +67,8 @@ func (s *Skiplist[K, V]) Close() (err error) {
 
 func (s *Skiplist[K, V]) set(key K, val V, allowUpdate bool) (err error) {
 	e := makeEntry(key, val)
-	seekIndex := s.getSeekIndex(key)
-	index, match := s.floor.getIndex(seekIndex, key)
+	seekIndexes := s.getSeekIndexes(&key)
+	index, match := s.floor.getIndex(seekIndexes.Last(), &key)
 	switch {
 	case !match:
 		// No match, continue on
@@ -91,18 +91,16 @@ func (s *Skiplist[K, V]) set(key K, val V, allowUpdate bool) (err error) {
 		}
 	}
 
-	return s.updateReferences(e.Key, topLevel)
+	return s.updateReferences(e.Key, topLevel, seekIndexes)
 }
 
-func (s *Skiplist[K, V]) updateReferences(key K, topLevel int) (err error) {
-	var seekIndex int
+func (s *Skiplist[K, V]) updateReferences(key K, topLevel int, seekIndexes indexes) (err error) {
 	s.levels.iterateFromTopLevel(func(i int, l *level[K]) (end bool) {
 		if i > topLevel {
-			seekIndex = l.GetSeekIndex(seekIndex, key)
 			return
 		}
 
-		seekIndex = l.IterateAfter(seekIndex, key, func(index int, e Entry[K, int]) {
+		l.IterateAfter(seekIndexes.At(i), key, func(index int, e Entry[K, int]) {
 			e.Value++
 			l.Set(index, e)
 		})
@@ -145,7 +143,7 @@ func (s *Skiplist[K, V]) getLevel(n int) (l *level[K], err error) {
 	return
 }
 
-func (s *Skiplist[K, V]) getMatch(seekIndex int, key K) (value V, err error) {
+func (s *Skiplist[K, V]) getMatch(seekIndex int, key *K) (value V, err error) {
 	var match bool
 	if value, match = s.floor.GetMatch(seekIndex, key); !match {
 		err = ErrNotFound
@@ -155,9 +153,11 @@ func (s *Skiplist[K, V]) getMatch(seekIndex int, key K) (value V, err error) {
 	return
 }
 
-func (s *Skiplist[K, V]) getSeekIndex(key K) (seekIndex int) {
+func (s *Skiplist[K, V]) getSeekIndexes(key *K) (seekIndexes indexes) {
+	var seekIndex int
 	s.levels.iterateFromTopLevel(func(i int, l *level[K]) (end bool) {
 		seekIndex = l.GetSeekIndex(seekIndex, key)
+		seekIndexes = append(seekIndexes, seekIndex)
 		return false
 	})
 

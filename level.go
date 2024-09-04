@@ -23,16 +23,12 @@ type level[K Key] struct {
 	*layer[K, int]
 }
 
-func (l *level[K]) GetSeekIndex(seekIndex int, key K) (index int) {
-	cur := l.Cursor()
-	defer cur.Close()
-
-	e, ok := cur.Seek(seekIndex)
-	for ok {
-		switch e.Key.Compare(&key) {
+func (l *level[K]) GetSeekIndex(seekIndex int, key *K) (index int) {
+	for e, ok := l.Slice.Get(seekIndex); ok; e, ok = l.Slice.Get(seekIndex) {
+		switch e.Key.Compare(key) {
 		case -1:
 			index = e.Value
-			e, ok = cur.Next()
+			seekIndex++
 		case 1:
 			return index
 		case 0:
@@ -43,21 +39,12 @@ func (l *level[K]) GetSeekIndex(seekIndex int, key K) (index int) {
 	return
 }
 
-func (l *level[K]) IterateAfter(index int, key K, fn func(index int, e Entry[K, int])) (seekIndex int) {
-	cur := l.Cursor()
-	defer cur.Close()
-
-	e, ok := cur.Seek(index)
-	for ok {
-		if e.Key.Compare(&key) < 1 {
-			seekIndex = e.Value
-		} else {
+func (l *level[K]) IterateAfter(index int, key K, fn func(index int, e Entry[K, int])) {
+	for e, ok := l.Get(index); ok; e, ok = l.Get(index) {
+		if e.Key.Compare(&key) == 1 {
 			fn(index, e)
 		}
 
-		e, ok = cur.Next()
 		index++
 	}
-
-	return
 }

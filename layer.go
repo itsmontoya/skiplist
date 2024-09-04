@@ -23,7 +23,7 @@ type layer[K Key, V any] struct {
 
 func (l *layer[K, V]) Insert(seekIndex int, e Entry[K, V]) (index int, err error) {
 	var match bool
-	if index, match = l.getIndex(seekIndex, e.Key); match {
+	if index, match = l.getIndex(seekIndex, &e.Key); match {
 		err = fmt.Errorf("key of <%v> is already in layer", e.Key)
 		return
 	}
@@ -50,15 +50,11 @@ func (l *layer[K, V]) insertAt(index int, e Entry[K, V]) (err error) {
 }
 
 // TODO: Improve this lookup with binary search
-func (l *layer[K, V]) getIndex(seekIndex int, key K) (index int, ok bool) {
-	cur := l.Cursor()
-	defer cur.Close()
+func (l *layer[K, V]) getIndex(seekIndex int, key *K) (index int, ok bool) {
 	index = seekIndex
-	e, ok := cur.Seek(index)
-	for ok {
-		switch e.Key.Compare(&key) {
+	for e, ok := l.Get(index); ok; e, ok = l.Get(index) {
+		switch e.Key.Compare(key) {
 		case -1:
-			e, ok = cur.Next()
 			index++
 		case 1:
 			return index, false
