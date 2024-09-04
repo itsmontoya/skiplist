@@ -6,9 +6,9 @@ import (
 	"github.com/itsmontoya/mappedslice"
 )
 
-func newLayer[K Key, V any](filepath string) (out *layer[K, V], err error) {
+func newLayer[K Key, V any](filepath string, size int64) (out *layer[K, V], err error) {
 	var l layer[K, V]
-	if l.Slice, err = mappedslice.New[Entry[K, V]](filepath, 32); err != nil {
+	if l.Slice, err = mappedslice.New[Entry[K, V]](filepath, size); err != nil {
 		return
 	}
 
@@ -56,7 +56,7 @@ func (l *layer[K, V]) getIndex(seekIndex int, key K) (index int, ok bool) {
 	index = seekIndex
 	e, ok := cur.Seek(index)
 	for ok {
-		switch e.Key.Compare(key) {
+		switch e.Key.Compare(&key) {
 		case -1:
 			e, ok = cur.Next()
 			index++

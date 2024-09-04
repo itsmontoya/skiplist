@@ -9,7 +9,7 @@ func newLevel[K Key](fullPath string, n int) (out *level[K], err error) {
 	var l level[K]
 	filename := fmt.Sprintf("level_%d.bat", n)
 	filepath := path.Join(fullPath, filename)
-	if l.layer, err = newLayer[K, int](filepath); err != nil {
+	if l.layer, err = newLayer[K, int](filepath, 32); err != nil {
 		return
 	}
 
@@ -29,7 +29,7 @@ func (l *level[K]) GetSeekIndex(seekIndex int, key K) (index int) {
 
 	e, ok := cur.Seek(seekIndex)
 	for ok {
-		switch e.Key.Compare(key) {
+		switch e.Key.Compare(&key) {
 		case -1:
 			index = e.Value
 			e, ok = cur.Next()
@@ -49,7 +49,7 @@ func (l *level[K]) IterateAfter(index int, key K, fn func(index int, e Entry[K, 
 
 	e, ok := cur.Seek(index)
 	for ok {
-		if e.Key.Compare(key) < 1 {
+		if e.Key.Compare(&key) < 1 {
 			seekIndex = e.Value
 		} else {
 			fn(index, e)

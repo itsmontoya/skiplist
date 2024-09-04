@@ -16,6 +16,6 @@ func (v Varchar16) String() string {
 }
 
 func (v Varchar16) Compare(in any) (result int) {
-	b := in.(Varchar16)
+	b := *(in.(*Varchar16))
 	return slices.Compare(v[:], b[:])
 }

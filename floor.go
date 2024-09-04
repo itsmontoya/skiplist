@@ -4,10 +4,10 @@ import (
 	"path"
 )
 
-func newFloor[K Key, V any](fullPath string) (out *floor[K, V], err error) {
+func newFloor[K Key, V any](fullPath string, size int64) (out *floor[K, V], err error) {
 	var f floor[K, V]
 	filepath := path.Join(fullPath, "floor.bat")
-	if f.layer, err = newLayer[K, V](filepath); err != nil {
+	if f.layer, err = newLayer[K, V](filepath, size); err != nil {
 		return
 	}
 
@@ -26,7 +26,7 @@ func (f *floor[K, V]) GetMatch(seekIndex int, key K) (value V, ok bool) {
 	var e Entry[K, V]
 	e, ok = cur.Seek(seekIndex)
 	for ok {
-		switch e.Key.Compare(key) {
+		switch e.Key.Compare(&key) {
 		case -1:
 			e, ok = cur.Next()
 		case 1:
