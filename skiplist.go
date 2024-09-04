@@ -71,15 +71,36 @@ func (s *Skiplist[K, V]) set(key K, val V, allowUpdate bool) (err error) {
 		return
 	}
 
-	if s.floor.count%s.incrementEvery != 0 {
-		return
+	var topLevel int
+	if s.floor.count%s.incrementEvery == 0 {
+		if topLevel, err = s.insertReferences(key, index); err != nil {
+			return
+		}
 	}
 
-	return s.insertReferences(key, index)
+	return s.updateReferences(e.Key, topLevel)
 }
 
-func (s *Skiplist[K, V]) insertReferences(key K, lastIndex int) (err error) {
-	var nextLevel int
+func (s *Skiplist[K, V]) updateReferences(key K, topLevel int) (err error) {
+	var seekIndex int
+	s.levels.iterateFromTopLevel(func(i int, l *level[K]) (end bool) {
+		if i > topLevel {
+			seekIndex = l.GetSeekIndex(seekIndex, key)
+			return
+		}
+
+		seekIndex = l.IterateAfter(seekIndex, key, func(index int, e Entry[K, int]) {
+			e.Value++
+			l.Set(index, e)
+		})
+
+		return false
+	})
+
+	return
+}
+
+func (s *Skiplist[K, V]) insertReferences(key K, lastIndex int) (nextLevel int, err error) {
 	for {
 		var l *level[K]
 		if l, err = s.getLevel(nextLevel); err != nil {
@@ -90,11 +111,11 @@ func (s *Skiplist[K, V]) insertReferences(key K, lastIndex int) (err error) {
 			return
 		}
 
+		nextLevel++
+
 		if l.count%s.incrementEvery != 0 {
 			return
 		}
-
-		nextLevel++
 	}
 }
 
@@ -122,7 +143,7 @@ func (s *Skiplist[K, V]) getMatch(seekIndex int, key K) (value V, err error) {
 }
 
 func (s *Skiplist[K, V]) getSeekIndex(key K) (seekIndex int) {
-	s.levels.reverseIterate(func(i int, l *level[K]) (end bool) {
+	s.levels.iterateFromTopLevel(func(i int, l *level[K]) (end bool) {
 		seekIndex = l.GetSeekIndex(seekIndex, key)
 		return false
 	})
