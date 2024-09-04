@@ -65,13 +65,13 @@ func walkLevels(fullPath string, fn func(filepath string, parsed int) error) (er
 type levels[K Key] []*level[K]
 
 func (ls levels[K]) printLayers() {
-	ls.reverseIterate(func(_ int, l *level[K]) bool {
+	ls.iterateFromTopLevel(func(_ int, l *level[K]) bool {
 		l.printLayer()
 		return false
 	})
 }
 
-func (ls levels[K]) reverseIterate(fn func(i int, l *level[K]) (end bool)) (ended bool) {
+func (ls levels[K]) iterateFromTopLevel(fn func(i int, l *level[K]) (end bool)) (ended bool) {
 	for i := len(ls) - 1; i > -1; i-- {
 		l := ls[i]
 		if ended = fn(i, l); ended {
