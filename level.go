@@ -43,24 +43,20 @@ func (l *level[K]) GetSeekIndex(seekIndex int, key K) (index int) {
 	return
 }
 
-func (l *level[K]) Insert(seekIndex int, e Entry[K, int]) (index int, err error) {
-	if index, err = l.layer.Insert(seekIndex, e); err != nil {
-		return
-	}
-
+func (l *level[K]) IterateAfter(index int, key K, fn func(index int, e Entry[K, int])) (seekIndex int) {
 	cur := l.Cursor()
 	defer cur.Close()
 
-	iteratingIndex := index + 1
-	e, ok := cur.Seek(iteratingIndex)
+	e, ok := cur.Seek(index)
 	for ok {
-		e.Value++
-		if err = l.Slice.Set(iteratingIndex, e); err != nil {
-			return
+		if e.Key.Compare(key) < 1 {
+			seekIndex = e.Value
+		} else {
+			fn(index, e)
 		}
 
 		e, ok = cur.Next()
-		iteratingIndex++
+		index++
 	}
 
 	return
