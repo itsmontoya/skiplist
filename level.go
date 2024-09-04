@@ -39,12 +39,17 @@ func (l *level[K]) GetSeekIndex(seekIndex int, key *K) (index int) {
 	return
 }
 
-func (l *level[K]) IterateAfter(index int, key K, fn func(index int, e Entry[K, int])) {
+func (l *level[K]) IterateAfter(index int, key *K, fn func(index int, e Entry[K, int])) (seekIndex int) {
 	for e, ok := l.Get(index); ok; e, ok = l.Get(index) {
-		if e.Key.Compare(&key) == 1 {
+		switch {
+		case e.Key.Compare(key) < 1:
+			seekIndex = index
+		default:
 			fn(index, e)
 		}
 
 		index++
 	}
+
+	return
 }

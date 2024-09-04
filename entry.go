@@ -1,8 +1,8 @@
 package skiplist
 
-func makeEntry[K Key, V any](key K, val V) (e Entry[K, V]) {
-	e.Key = key
-	e.Value = val
+func makeEntry[K Key, V any](key *K, val *V) (e Entry[K, V]) {
+	e.Key = *key
+	e.Value = *val
 	return
 }
 
