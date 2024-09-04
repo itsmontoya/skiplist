@@ -1,6 +1,7 @@
 package skiplist
 
 import (
+	"errors"
 	"io/fs"
 	"path"
 	"path/filepath"
@@ -64,6 +65,16 @@ func walkLevels(fullPath string, fn func(filepath string, parsed int) error) (er
 
 type levels[K Key] []*level[K]
 
+func (ls levels[K]) Close() (err error) {
+	var errs []error
+	for _, l := range ls {
+		if err := l.Close(); err != nil {
+			errs = append(errs, err)
+		}
+	}
+
+	return errors.Join(errs...)
+}
 func (ls levels[K]) printLayers() {
 	ls.iterateFromTopLevel(func(_ int, l *level[K]) bool {
 		l.printLayer()

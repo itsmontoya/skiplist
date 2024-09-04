@@ -10,14 +10,14 @@ var (
 	ErrNotFound = errors.New("entry not found")
 )
 
-func New[K Key, V any](name, dir string) (out *Skiplist[K, V], err error) {
+func New[K Key, V any](name, dir string, size int64) (out *Skiplist[K, V], err error) {
 	var s Skiplist[K, V]
 	s.fullPath = path.Join(dir, name)
 	if err = os.MkdirAll(s.fullPath, 0744); err != nil {
 		return
 	}
 
-	if s.floor, err = newFloor[K, V](s.fullPath); err != nil {
+	if s.floor, err = newFloor[K, V](s.fullPath, size); err != nil {
 		return
 	}
 
@@ -25,7 +25,7 @@ func New[K Key, V any](name, dir string) (out *Skiplist[K, V], err error) {
 		return
 	}
 
-	s.incrementEvery = 4
+	s.incrementEvery = 40
 	out = &s
 	return
 }
@@ -50,6 +50,19 @@ func (s *Skiplist[K, V]) Set(key K, val V) (err error) {
 
 func (s *Skiplist[K, V]) SetNX(key K, val V) (err error) {
 	return s.set(key, val, false)
+}
+
+func (s *Skiplist[K, V]) Close() (err error) {
+	var errs []error
+	if err = s.levels.Close(); err != nil {
+		errs = append(errs, err)
+	}
+
+	if err = s.floor.Close(); err != nil {
+		errs = append(errs, err)
+	}
+
+	return errors.Join(errs...)
 }
 
 func (s *Skiplist[K, V]) set(key K, val V, allowUpdate bool) (err error) {
